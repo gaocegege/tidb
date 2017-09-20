@@ -186,9 +186,14 @@ var (
 	curTimeInt           = int64(curDateInt*1000000 + 125959)
 	curTimeWithFspReal   = float64(curTimeInt) + 0.555
 	curTimeString        = fmt.Sprintf("%4d-%02d-%02d 12:59:59", year, int(month), day)
+	curTimeShortString   = fmt.Sprintf("%4d-%02d-%02d 12", year, int(month), day)
 	curTimeWithFspString = fmt.Sprintf("%4d-%02d-%02d 12:59:59.555000", year, int(month), day)
 	tm                   = types.Time{
 		Time: types.FromDate(year, int(month), day, 12, 59, 59, 0),
+		Type: mysql.TypeDatetime,
+		Fsp:  types.DefaultFsp}
+	tmShort = types.Time{
+		Time: types.FromDate(year, int(month), day, 12, 0, 0, 0),
 		Type: mysql.TypeDatetime,
 		Fsp:  types.DefaultFsp}
 	tmWithFsp = types.Time{
@@ -196,7 +201,8 @@ var (
 		Type: mysql.TypeDatetime,
 		Fsp:  types.MaxFsp}
 	// timeDatum indicates datetime "curYear-curMonth-curDay 12:59:59".
-	timeDatum = types.NewDatum(tm)
+	timeDatum      = types.NewDatum(tm)
+	timeDatumShort = types.NewDatum(tmShort)
 	// timeWithFspDatum indicates datetime "curYear-curMonth-curDay 12:59:59.555000".
 	timeWithFspDatum = types.NewDatum(tmWithFsp)
 	duration         = types.Duration{
@@ -542,6 +548,12 @@ func (s *testEvaluatorSuite) TestCastFuncSig(c *C) {
 			&Column{RetType: types.NewFieldType(mysql.TypeDatetime), Index: 0},
 			curTimeString,
 			[]types.Datum{timeDatum},
+		},
+		// cast time as string.
+		{
+			&Column{RetType: types.NewFieldType(mysql.TypeDatetime), Index: 0},
+			curTimeShortString,
+			[]types.Datum{timeDatumShort},
 		},
 		// cast duration as string.
 		{
